@@ -5,6 +5,8 @@ module Main where
 import Text.HTML.Scalpel
 import System.Environment (getArgs)
 import Control.Monad (forM_)
+import Control.Applicative ((<$>), (<*>))
+import Control.Concurrent (threadDelay)
 
 data Price = New String
            | Used String
@@ -47,13 +49,11 @@ processURL url = do
   case firstLink of
     Nothing -> putStrLn "Book URL not found"
     Just link -> printResults link
+  threadDelay 2000000
 
 printResults :: URL -> IO ()
 printResults link = do
-  results <- scrapeURL link $ do
-    ps <- tablePrices'
-    t <- title
-    return (t, ps)
+  results <- scrapeURL link $ (,) <$> title <*> tablePrices' 
   case results of
     Nothing -> putStrLn "Prices not found"
     Just (t, (r:rs:_)) -> do
@@ -61,3 +61,4 @@ printResults link = do
       putStrLn $ show $ head $ map New r
       putStrLn $ show $ head $ map Used rs
       putStrLn ""
+      
