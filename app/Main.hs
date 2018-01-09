@@ -7,6 +7,7 @@ import System.Environment (getArgs)
 import Control.Monad (forM_)
 import Control.Applicative ((<$>), (<*>))
 import Control.Concurrent (threadDelay)
+import Control.Parallel.Strategies
 
 data Price = New String
            | Used String
@@ -26,7 +27,7 @@ tablePrices' = chroots ("table" @: ["class" @= "results-table-Logo"]) prices
 
 firstURL :: Scraper String URL
 firstURL =
-  attr "href" ("span" @: ["class" @= "select-titlename-top-match"] // "a")
+  attr "href" "a"
 
 firstURLs :: Scraper String URL
 firstURLs =
@@ -41,11 +42,11 @@ main :: IO ()
 main = do
   searchURLs <- getContents
   let urls = lines searchURLs  -- :: [URL], multiple urls for different books
-  forM_ urls processURL
+  mapM_ processURL urls
 
 processURL :: URL -> IO ()
 processURL url = do
-  firstLink <- scrapeURL (url) firstURLs  
+  firstLink <- scrapeURL (url) firstURLs
   case firstLink of
     Nothing -> putStrLn "Book URL not found"
     Just link -> printResults link
@@ -53,7 +54,7 @@ processURL url = do
 
 printResults :: URL -> IO ()
 printResults link = do
-  results <- scrapeURL link $ (,) <$> title <*> tablePrices' 
+  results <- scrapeURL link $ (,) <$> title <*> tablePrices'
   case results of
     Nothing -> putStrLn "Prices not found"
     Just (t, (r:rs:_)) -> do
@@ -61,4 +62,3 @@ printResults link = do
       putStrLn $ show $ head $ map New r
       putStrLn $ show $ head $ map Used rs
       putStrLn ""
-      

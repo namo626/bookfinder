@@ -31,7 +31,7 @@ library
       src
   build-depends:
       base >=4.7 && <5,
-      scalpel
+                scalpel
   exposed-modules:
   other-modules:
       Paths_book_scraper
@@ -46,6 +46,7 @@ executable book-scraper-exe
       base >=4.7 && <5
     , book-scraper
     , scalpel
+    , parallel
   other-modules:
       Paths_book_scraper
   default-language: Haskell2010
